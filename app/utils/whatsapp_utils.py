@@ -2,9 +2,14 @@ import logging
 from flask import current_app, jsonify
 import json
 import requests
+import re
 
 # from app.services.openai_service import generate_response
-import re
+from app.utils.message_handlers import (
+    generate_response,
+    get_welcome_message,
+    should_send_welcome,
+)
 
 
 def log_http_response(response):
@@ -23,11 +28,6 @@ def get_text_message_input(recipient, text):
             "text": {"preview_url": False, "body": text},
         }
     )
-
-
-def generate_response(response):
-    # Return text in uppercase
-    return response.upper()
 
 
 def send_message(data):
@@ -82,14 +82,21 @@ def process_whatsapp_message(body):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_body = message["text"]["body"]
 
-    # TODO: implement custom function here
+    # Check if this is a new user and send welcome message
+    if should_send_welcome(wa_id):
+        logging.info(f"Sending welcome message to new user: {wa_id}")
+        welcome_message = get_welcome_message()
+        welcome_data = get_text_message_input(wa_id, welcome_message)
+        send_message(welcome_data)
+
+    # Generate response to user's message
     response = generate_response(message_body)
 
     # OpenAI Integration
     # response = generate_response(message_body, wa_id, name)
     # response = process_text_for_whatsapp(response)
 
-    data = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
+    data = get_text_message_input(wa_id, response)
     send_message(data)
 
 
