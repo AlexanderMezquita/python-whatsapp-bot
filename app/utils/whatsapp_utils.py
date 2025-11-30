@@ -3,6 +3,7 @@ from flask import current_app, jsonify
 import json
 import requests
 import re
+import time
 
 # from app.services.openai_service import generate_response
 from app.utils.message_handlers import (
@@ -30,6 +31,36 @@ def get_text_message_input(recipient, text):
     )
 
 
+def get_template_message_input(recipient, template_name, language_code="es", header_image_url=None):
+    template_data = {
+        "messaging_product": "whatsapp",
+        "to": recipient,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {"code": language_code}
+        },
+    }
+
+    # Add header component if image URL is provided
+    if header_image_url:
+        template_data["template"]["components"] = [
+            {
+                "type": "header",
+                "parameters": [
+                    {
+                        "type": "image",
+                        "image": {
+                            "link": header_image_url
+                        }
+                    }
+                ]
+            }
+        ]
+
+    return json.dumps(template_data)
+
+
 def send_message(data):
     headers = {
         "Content-type": "application/json",
@@ -50,6 +81,9 @@ def send_message(data):
         requests.RequestException
     ) as e:  # This will catch any general request exception
         logging.error(f"Request failed due to: {e}")
+        # Log the actual error response from WhatsApp API
+        if hasattr(e, 'response') and e.response is not None:
+            logging.error(f"WhatsApp API Error Response: {e.response.text}")
         return jsonify({"status": "error", "message": "Failed to send message"}), 500
     else:
         # Process the response as normal
@@ -82,9 +116,29 @@ def process_whatsapp_message(body):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_body = message["text"]["body"]
 
-    # Check if this is a new user and send welcome message
+    # Check if this is a new user and send welcome messages
     if should_send_welcome(wa_id):
-        logging.info(f"Sending welcome message to new user: {wa_id}")
+        logging.info(f"Sending welcome messages to new user: {wa_id}")
+
+        # Send template message first with header image
+        header_image_url = "https://www.rizosafrosymas.com/_next/image?url=%2Fram1.jpg&w=2048&q=75"
+        template_data = get_template_message_input(
+            wa_id,
+            "mensaje_de_bienvenida",
+            header_image_url=header_image_url
+        )
+        template_response = send_message(template_data)
+
+        # Log template response for debugging
+        if isinstance(template_response, tuple):
+            logging.error(f"Template message failed: {template_response}")
+        else:
+            logging.info(f"Template message response: {template_response.status_code} - {template_response.text}")
+
+        # Wait a bit to ensure template is delivered first
+        time.sleep(2)
+
+        # Then send text welcome message with menu
         welcome_message = get_welcome_message()
         welcome_data = get_text_message_input(wa_id, welcome_message)
         send_message(welcome_data)
