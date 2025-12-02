@@ -94,6 +94,11 @@ class TestMessageHandlers(unittest.TestCase):
         response = generate_response("reserva")
         self.assertIsNotNone(response)
 
+    def test_cita_keyword(self):
+        """Test that 'cita' keyword triggers reserva response"""
+        response = generate_response("cita")
+        self.assertIsNotNone(response)
+
     def test_hola_keyword(self):
         """Test that 'hola' keyword triggers greeting response"""
         response = generate_response("hola")

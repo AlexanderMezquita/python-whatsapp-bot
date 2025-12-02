@@ -90,7 +90,7 @@ def generate_response(response):
         return load_message('servicios.txt')
     elif "ubicacion" in message_lower or "ubicación" in message_lower:
         return load_message('ubicacion.txt')
-    elif "reserva" in message_lower:
+    elif "reserva" in message_lower or "cita" in message_lower:
         return load_message('reserva.txt')
     elif "hola" in message_lower:
         return load_message('hola.txt')

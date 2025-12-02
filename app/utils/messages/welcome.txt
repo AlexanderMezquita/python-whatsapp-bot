@@ -3,11 +3,18 @@
 Escribe una palabra clave para más información:
 
 *Información General:*
-📋 SERVICIOS | 💰 COSTOS | 🕒 HORARIO
-📍 UBICACION | 📅 RESERVA
+📋 SERVICIOS
+💰 COSTOS
+🕒 HORARIO
+📍 UBICACION
+📅 RESERVA
 
 *Servicios:*
-🌀 CONSULTA | 💧 LAVADO | 💫 RIZOS ELABORADOS
-🌍 TRENZAS | 🧶 CROCHET | 🎨 COLOR
+🌀 CONSULTA
+💧 LAVADO
+💫 RIZOS ELABORADOS
+🌍 TRENZAS
+🧶 CROCHET
+🎨 COLOR
 
 💬 ¿En qué puedo ayudarte?
